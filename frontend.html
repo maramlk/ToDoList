@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <header class="top-header">
+        <h1>📋 My Productivity Dashboard</h1>
+        <div class="theme-buttons">
+            <button onclick="setTheme('purple')">🟣</button>
+            <button onclick="setTheme('green')">🟢</button>
+            <button onclick="setTheme('blue')">🔵</button>
+            <button onclick="setTheme('orange')">🟠</button>
+          </div>
+      </header>
+    <head>
+        <meta charset="UTF-8">
+        <title>To-Do List with Calendar & Pomodoro</title>
+        <link rel="stylesheet" href="style.css">
+      
+        <!-- ✅ FullCalendar v6.1.7 CDN (correct links) -->
+        <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/main.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/index.global.min.js"></script>
+      </head>
+<body>
+    <button id="themeToggle">🌙 Dark Mode</button>
+
+  <div class="main-container">
+    <!-- === TO-DO LIST PANEL === -->
+    <div class="todo-container">
+      <h2>To-Do List</h2>
+      <input type="text" id="taskInput" placeholder="Add a new task...">
+      <input type="date" id="taskDate">
+      <input type="time" id="taskTime">
+      <button onclick="addTask()">Add Task</button>
+      <ul id="taskList"></ul>
+    </div>
+    <div id="calendar"></div>
+
+    <!-- === POMODORO TIMER PANEL === -->
+    <div class="timer-container">
+      <h2>🍅 Pomodoro Timer</h2>
+      <div id="timer">25:00</div>
+      <div class="timer-buttons">
+        <button onclick="startTimer()">Start</button>
+        <button onclick="pauseTimer()">Pause</button>
+        <button onclick="resetTimer()">Reset</button>
+      </div>
+      <p id="timerStatus">Focus time</p>
+    </div>
+
+  </div>
+  
+  <footer class="bottom-footer">
+    <p>Made with ❤️ by Maram Loukil | HTML • CSS • JavaScript • FullCalendar</p>
+    <p class="description">
+        This productivity dashboard combines a to-do list, calendar scheduling, and a Pomodoro timer to help manage tasks efficiently. Built using HTML, CSS, JavaScript, and FullCalendar.js.
+      </p>
+      
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
