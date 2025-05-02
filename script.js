@@ -231,6 +231,14 @@ updateTimerDisplay(); // initial call
 // === THEME COLOR SWITCHING ===
 function setTheme(color) {
   switch (color) {
+    case "pink":
+      document.documentElement.style.setProperty("--accent-color", "#d63384");
+      document.documentElement.style.setProperty("--accent-dark", "#ad1457");
+      document.documentElement.style.setProperty("--accent-light", "#ffe0f0");
+      document.documentElement.style.setProperty("--text-heading", "#d63384");
+      document.documentElement.style.setProperty("--btn-hover", "#e754a6");
+      document.documentElement.style.setProperty("--background-gradient", "linear-gradient(to right, #f8a1d1, #ffd6e8)");
+  break;
     case "green":
       document.documentElement.style.setProperty("--accent-color", "#2e7d32");
       document.documentElement.style.setProperty("--accent-dark", "#1b5e20");
@@ -288,3 +296,168 @@ document.querySelectorAll(".theme-buttons button").forEach((btn) => {
     btn.classList.add("active");
   });
 });
+let exams = [];
+
+function addExam() {
+  const name = document.getElementById("examName").value.trim();
+  const dateStr = document.getElementById("examDate").value;
+
+  if (!name || !dateStr) return alert("Please enter both exam name and date");
+
+  const date = new Date(dateStr);
+  exams.push({ name, date });
+  document.getElementById("examName").value = "";
+  document.getElementById("examDate").value = "";
+
+  renderExamCountdowns();
+}
+
+function renderExamCountdowns() {
+  const container = document.getElementById("examCountdowns");
+  container.innerHTML = "";
+
+  exams.forEach((exam, i) => {
+    const block = document.createElement("div");
+    block.className = "exam-block";
+    block.innerHTML = `
+      <h4>${exam.name}</h4>
+      <div class="flip-clock">
+        <div class="unit"><span id="days-${i}">00</span><label>DAYS</label></div>
+        <div class="unit"><span id="hours-${i}">00</span><label>HOURS</label></div>
+        <div class="unit"><span id="minutes-${i}">00</span><label>MINUTES</label></div>
+        <div class="unit"><span id="seconds-${i}">00</span><label>SECONDS</label></div>
+      </div>`;
+    container.appendChild(block);
+  });
+}
+
+// Updates every second
+setInterval(() => {
+  const now = new Date();
+
+  exams.forEach((exam, i) => {
+    const diff = exam.date - now;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    document.getElementById(`days-${i}`).textContent = days.toString().padStart(2, '0');
+    document.getElementById(`hours-${i}`).textContent = hours.toString().padStart(2, '0');
+    document.getElementById(`minutes-${i}`).textContent = minutes.toString().padStart(2, '0');
+    document.getElementById(`seconds-${i}`).textContent = seconds.toString().padStart(2, '0');
+  });
+}, 1000);
+
+// === EXAM COUNTDOWN STORAGE ===
+// === EXAM COUNTDOWN STORAGE + LIVE RENDER ===
+let examTimers = [];
+
+function addExam() {
+  const name = document.getElementById("examName").value.trim();
+  const dateStr = document.getElementById("examDate").value;
+
+  if (!name || !dateStr) return alert("Please enter both exam name and date");
+
+  const exam = { name, date: dateStr };
+  saveExamToStorage(exam);
+  renderExamCountdown(exam);
+
+  document.getElementById("examName").value = "";
+  document.getElementById("examDate").value = "";
+}
+
+function saveExamToStorage(exam) {
+  const exams = JSON.parse(localStorage.getItem("exams") || "[]");
+  exams.push(exam);
+  localStorage.setItem("exams", JSON.stringify(exams));
+}
+
+function loadExamsFromStorage() {
+  const exams = JSON.parse(localStorage.getItem("exams") || "[]");
+  exams.forEach(exam => renderExamCountdown(exam));
+}
+
+function renderExamCountdown(exam) {
+    const container = document.getElementById("examCountdowns");
+  
+    const block = document.createElement("div");
+    block.className = "exam-block";
+    block.setAttribute("data-name", exam.name);
+    block.setAttribute("data-date", exam.date);
+  
+    const title = document.createElement("h4");
+    title.textContent = exam.name;
+    block.appendChild(title);
+  
+    const timerDiv = document.createElement("div");
+    timerDiv.className = "flip-clock";
+  
+    const days = createTimeUnit("00", "Days");
+    const hours = createTimeUnit("00", "Hours");
+    const minutes = createTimeUnit("00", "Minutes");
+    const seconds = createTimeUnit("00", "Seconds");
+  
+    timerDiv.append(days.unit, hours.unit, minutes.unit, seconds.unit);
+    block.appendChild(timerDiv);
+  
+    // 🗑️ Add delete button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "❌ Delete";
+    deleteBtn.className = "delete-exam-btn";
+    deleteBtn.onclick = () => {
+      container.removeChild(block);
+      deleteExamFromStorage(exam);
+    };
+    block.appendChild(deleteBtn);
+  
+    container.appendChild(block);
+  
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const target = new Date(exam.date).getTime();
+      const distance = target - now;
+  
+      if (distance <= 0) {
+        clearInterval(interval);
+        days.num.textContent = hours.num.textContent = minutes.num.textContent = seconds.num.textContent = "00";
+        return;
+      }
+  
+      const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+  
+      days.num.textContent = String(d).padStart(2, '0');
+      hours.num.textContent = String(h).padStart(2, '0');
+      minutes.num.textContent = String(m).padStart(2, '0');
+      seconds.num.textContent = String(s).padStart(2, '0');
+    }, 1000);
+  
+    examTimers.push(interval);
+  }
+  function deleteExamFromStorage(examToDelete) {
+    let exams = JSON.parse(localStorage.getItem("exams") || "[]");
+    exams = exams.filter(exam =>
+      !(exam.name === examToDelete.name && exam.date === examToDelete.date)
+    );
+    localStorage.setItem("exams", JSON.stringify(exams));
+  }
+function createTimeUnit(value, labelText) {
+  const unit = document.createElement("div");
+  unit.className = "unit";
+
+  const num = document.createElement("span");
+  num.textContent = value;
+
+  const label = document.createElement("label");
+  label.textContent = labelText;
+
+  unit.appendChild(num);
+  unit.appendChild(label);
+
+  return { unit, num };
+}
+
+document.addEventListener("DOMContentLoaded", loadExamsFromStorage);
